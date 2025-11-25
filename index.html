@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>I LOVE YOU KRISHNA — Animation</title>
+  <style>
+    :root{
+      --bg:#0f1020; --accent:#ff3b6b; --accent2:#ffd166; --glass: rgba(255,255,255,0.06);
+    }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background: radial-gradient(ellipse at 20% 10%, #1b1b30 0%, var(--bg) 40%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2)); color:#fff; display:flex; align-items:center; justify-content:center}
+
+    .card{width:920px; max-width:94vw; min-height:520px; border-radius:18px; padding:30px; box-shadow:0 10px 40px rgba(2,6,23,0.6); background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); position:relative; overflow:hidden}
+
+    header{display:flex;gap:20px; align-items:center}
+    .logo{width:72px; height:72px; border-radius:14px; background:linear-gradient(135deg,var(--accent),#ff7aa2); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:26px}
+    h1{margin:0; font-size:28px}
+    p.lead{margin:8px 0 0 0; opacity:0.9}
+
+    .stage{display:grid; grid-template-columns:1fr 420px; gap:24px; margin-top:30px}
+
+    .left{padding:18px}
+    .big-heart{width:100%; height:320px; display:flex; align-items:center; justify-content:center; position:relative}
+
+    /* Heart */
+    .heart{width:180px;height:180px; position:relative; transform:scale(1); transition:transform .25s ease; cursor:pointer}
+    .heart:before, .heart:after{content:''; position:absolute; width:100px; height:160px; background:var(--accent); border-radius:100px 100px 0 0; top:0; left:40px; transform:rotate(-45deg); transform-origin:0 100%; box-shadow:0 6px 24px rgba(255,59,107,0.18)}
+    .heart:after{left:0; transform:rotate(45deg); transform-origin:100% 100%}
+    .heart.pulse{animation:pulse 1.2s ease infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+    /* floating tiny hearts */
+    .float-wrap{position:absolute; inset:0; pointer-events:none}
+    .float-heart{position:absolute; width:22px; height:22px; background:var(--accent); transform-origin:center; opacity:0.95}
+    .float-heart:before, .float-heart:after{content:''; position:absolute; width:12px; height:22px; background:var(--accent); border-radius:10px 10px 0 0}
+
+    /* right panel */
+    .right{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px}
+    .info{font-size:15px}
+    .btn{padding:12px 18px; background:linear-gradient(90deg,var(--accent),#ff7aa2); border:none; color:#fff; font-weight:700; border-radius:12px; cursor:pointer; box-shadow:0 8px 18px rgba(255,59,107,0.18)}
+    .btn:active{transform:translateY(1px)}
+
+    .message{position:absolute; left:50%; top:14%; transform:translateX(-50%); font-size:48px; font-weight:900; letter-spacing:1px; text-transform:uppercase; pointer-events:none; opacity:0; transform-origin:center; color:var(--accent2); text-shadow:0 6px 28px rgba(0,0,0,0.6);}
+
+    /* animated stroke text */
+    .message span{display:inline-block; background:linear-gradient(90deg,var(--accent2),#ff9f80); -webkit-background-clip:text; background-clip:text; color:transparent}
+
+    /* confetti canvas */
+    canvas{position:absolute; inset:0; pointer-events:none}
+
+    footer{position:absolute; bottom:18px; left:24px; font-size:13px; opacity:0.8}
+
+    @media (max-width:860px){
+      .stage{grid-template-columns:1fr;}
+      .right{order:2}
+      .big-heart{height:260px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <header>
+      <div class="logo">❤</div>
+      <div>
+        <h1>I LOVE YOU — Krishna</h1>
+        <p class="lead">Click the heart or the button to send a colorful wish with animations and a big "I LOVE YOU KRISHNA" reveal.</p>
+      </div>
+    </header>
+
+    <div class="stage">
+      <div class="left">
+        <div class="big-heart">
+          <div class="heart pulse" id="mainHeart" title="Click me!" aria-hidden="false"></div>
+          <div class="float-wrap" id="floatWrap"></div>
+        </div>
+
+        <p style="opacity:.9">Touch the heart or press the button on the right. Hearts will float, confetti bursts and a big animated text will appear on top. This page is fully client-side — you can save it and open offline.</p>
+      </div>
+
+      <aside class="right">
+        <div class="info">Made with ❤️ for Krishna. Customize the name inside the JS if you want a different name displayed.</div>
+        <div style="display:flex; gap:8px; align-items:center">
+          <button class="btn" id="loveBtn">Send ❤️</button>
+          <button class="btn" id="shakeBtn">Surprise Shake</button>
+        </div>
+        <div style="font-size:13px; opacity:.85">Tip: Right-click &amp; Save As → to download this page as a single HTML file and open it anywhere.</div>
+      </aside>
+    </div>
+
+    <div class="message" id="message"><span>I LOVE YOU<br>KRISHNA</span></div>
+    <canvas id="c"></canvas>
+    <footer>Made with love • Open, save and share 💌</footer>
+  </div>
+
+  <script>
+    const mainHeart = document.getElementById('mainHeart');
+    const floatWrap = document.getElementById('floatWrap');
+    const btn = document.getElementById('loveBtn');
+    const shakeBtn = document.getElementById('shakeBtn');
+    const message = document.getElementById('message');
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    let confettiPieces = [];
+
+    function resize(){canvas.width = window.innerWidth; canvas.height = window.innerHeight}
+    window.addEventListener('resize', resize); resize();
+
+    // small floating hearts generator
+    function spawnFloatingHeart(xPerc){
+      const el = document.createElement('div');
+      el.className = 'float-heart';
+      const size = 12 + Math.random()*18;
+      el.style.width = size+'px'; el.style.height = size+'px';
+      // position
+      const x = (xPerc || (20 + Math.random()*60));
+      el.style.left = x + '%';
+      el.style.bottom = '-10px';
+      // make heart shape via pseudo elements by using background and rotation with transform
+      el.style.background = 'transparent';
+      el.innerHTML = '';
+      el.style.borderRadius = '0';
+      el.style.transform = 'rotate(45deg)';
+      el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+      el.style.background = 'linear-gradient(180deg, rgba(255,59,107,1), rgba(255,123,160,0.95))';
+      el.style.opacity = 0.95;
+      floatWrap.appendChild(el);
+      // animate up
+      const dur = 3500 + Math.random()*2500;
+      el.animate([
+        { transform: `translateY(0) rotate(${Math.random()*60-30}deg) scale(0.8)`, opacity:1},
+        { transform: `translateY(-${120+Math.random()*220}px) rotate(${Math.random()*60-30}deg) scale(1.05)`, opacity:0}
+      ], {duration:dur, easing:'cubic-bezier(.2,.9,.2,1)'}).onfinish = ()=> el.remove();
+    }
+
+    // heart click / button
+    function triggerLove(){
+      mainHeart.classList.add('pop');
+      // pulse briefly
+      mainHeart.classList.add('pulse');
+      setTimeout(()=> mainHeart.classList.remove('pulse'), 1300);
+      // spawn many small hearts
+      for(let i=0;i<12;i++) spawnFloatingHeart(10 + Math.random()*80);
+      // show message
+      showMessage();
+      // burst confetti
+      burstConfetti();
+    }
+
+    mainHeart.addEventListener('click', ()=> triggerLove());
+    btn.addEventListener('click', ()=> triggerLove());
+
+    // shake button -> quick playful animation
+    shakeBtn.addEventListener('click', ()=>{
+      const el = document.getElementById('card');
+      el.animate([
+        { transform:'translateX(0)' }, { transform:'translateX(-12px)' }, { transform:'translateX(10px)' }, { transform:'translateX(-8px)' }, { transform:'translateX(0)' }
+      ], { duration:500, easing:'ease-in-out' });
+      // a few hearts too
+      for(let i=0;i<6;i++) spawnFloatingHeart(20 + Math.random()*60);
+    });
+
+    // message reveal
+    function showMessage(){
+      message.style.transition = 'none';
+      message.style.opacity = 1;
+      message.style.transform = 'translateX(-50%) scale(0.85)';
+      // animate in
+      requestAnimationFrame(()=>{
+        message.style.transition = 'transform 700ms cubic-bezier(.2,.9,.25,1), opacity 500ms ease';
+        message.style.transform = 'translateX(-50%) scale(1)';
+      });
+      // hide after some time
+      clearTimeout(message._hide);
+      message._hide = setTimeout(()=>{
+        message.style.opacity = 0;
+      }, 4200);
+    }
+
+    // simple confetti physics
+    function burstConfetti(){
+      const cx = window.innerWidth/2; const cy = window.innerHeight/3;
+      const colors = ['#ff3b6b','#ffd166','#ffd1e6','#ff7aa2','#ffb3c6'];
+      for(let i=0;i<80;i++){
+        confettiPieces.push({
+          x:cx, y:cy,
+          vx:(Math.random()-0.5)*8, vy:(Math.random()*-7)-2,
+          size:4+Math.random()*8, color: colors[Math.floor(Math.random()*colors.length)], rot:Math.random()*360, vr:(Math.random()-0.5)*10, life: 80 + Math.random()*40
+        });
+      }
+    }
+
+    function updateAndDraw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let i=confettiPieces.length-1;i>=0;i--){
+        const p = confettiPieces[i];
+        p.life -= 1;
+        p.vy += 0.18; // gravity
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.rot * Math.PI/180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*1.8);
+        ctx.restore();
+        if(p.life<=0 || p.y > canvas.height+50) confettiPieces.splice(i,1);
+      }
+      requestAnimationFrame(updateAndDraw);
+    }
+    updateAndDraw();
+
+    // Auto gentle floating hearts occasionally
+    setInterval(()=>{
+      if(Math.random()<0.7) spawnFloatingHeart();
+    }, 900);
+
+    // accessibility: trigger on Enter when focused
+    mainHeart.tabIndex = 0;
+    mainHeart.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); triggerLove(); } });
+
+    // small tweak: clicking outside removes message
+    document.addEventListener('click', (e)=>{
+      if(!e.target.closest('.btn') && !e.target.closest('.heart')){
+        // nothing
+      }
+    });
+
+    // optional: change name quickly (edit here)
+    // const name = 'KRISHNA'; // change if needed
+  </script>
+</body>
+</html>
